@@ -6,13 +6,13 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyAjEB5f4sC-gpu5UojiNtuyTqv-fqvkM2s',
-  authDomain: 'greentrace-25236.firebaseapp.com',
-  projectId: 'greentrace-25236',
-  storageBucket: 'greentrace-25236.firebasestorage.app',
-  messagingSenderId: '1105694768',
-  appId: '1:1105694768:web:fcd8a0c98a0be768deddf5',
-  measurementId: 'G-W0NJ80HTCT',
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
