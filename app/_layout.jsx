@@ -24,15 +24,17 @@ export default function RootLayout() {
 
   if (loading) return (
     <SafeAreaProvider>
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
-        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+      <View style={styles.loadingContainer}>
+        <View style={styles.logoContainer}>
           <Image 
             source={require('../assets/icon.png')} 
-            style={{ width: 120, height: 120, borderRadius: 24 }}
+            style={styles.logo}
             resizeMode="contain"
+            onLoadError={() => console.log('Logo load failed')}
           />
         </View>
         <ActivityIndicator color={colors.primary} size="large" />
+        <Text style={styles.loadingText}>Loading GreenTrace...</Text>
       </View>
     </SafeAreaProvider>
   );
@@ -43,3 +45,31 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    marginBottom: 40,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    borderRadius: 30,
+  },
+  loadingText: {
+    marginTop: 20,
+    color: '#2E7D32',
+    fontSize: 16,
+    fontWeight: '600',
+  }
+});

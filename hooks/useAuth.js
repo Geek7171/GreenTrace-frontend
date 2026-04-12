@@ -8,6 +8,11 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timeout to prevent loading hang
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
         // Run a one-time sync to fix missing names/wallets in serverless mode
@@ -20,7 +25,7 @@ export function useAuth() {
              await setDoc(userRef, {
                uid: u.uid,
                role: 'RESIDENT',
-               displayName: u.displayName || 'Resident',
+               displayName: (u.displayName || 'Resident').trim(),
                email: u.email,
                updatedAt: serverTimestamp(),
              }, { merge: true });
@@ -44,8 +49,12 @@ export function useAuth() {
       }
       setUser(u);
       setLoading(false);
+      clearTimeout(timer);
     });
-    return unsub;
+    return () => {
+      unsub();
+      clearTimeout(timer);
+    };
   }, []);
 
   return { user, loading };
