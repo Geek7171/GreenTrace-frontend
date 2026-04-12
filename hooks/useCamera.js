@@ -5,7 +5,7 @@ export function useCamera() {
   const cameraRef = useRef(null);
   const takePhoto = async () => {
     if (!cameraRef.current) return;
-    const result = await cameraRef.current.takePictureAsync({ quality: 0.7 });
+    const result = await cameraRef.current.takePictureAsync({ quality: 0.1, base64: true });
     setPhoto(result);
     return result;
   };

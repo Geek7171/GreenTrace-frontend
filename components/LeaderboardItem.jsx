@@ -3,13 +3,16 @@ import { colors } from '../constants/theme';
 
 const medals = ['🥇', '🥈', '🥉'];
 
-export default function LeaderboardItem({ rank, name, building, points, isCurrentUser }) {
+export default function LeaderboardItem({ rank, name, buildingId, points, streak, isCurrentUser }) {
   return (
     <View style={[styles.row, isCurrentUser && styles.highlighted]}>
       <Text style={styles.rank}>{medals[rank - 1] || `#${rank}`}</Text>
       <View style={{ flex: 1 }}>
         <Text style={styles.name}>{name}</Text>
-        <Text style={styles.building}>{building}</Text>
+        <Text style={styles.meta}>
+          {buildingId ? `Building: ${buildingId}` : 'Global'}
+          {streak > 0 ? ` • 🔥 ${streak} day streak` : ''}
+        </Text>
       </View>
       <Text style={styles.points}>{points} pts</Text>
     </View>
@@ -21,6 +24,6 @@ const styles = StyleSheet.create({
   highlighted: { backgroundColor: '#E8F5E9', borderWidth: 1, borderColor: colors.accent },
   rank: { fontSize: 20, width: 40 },
   name: { fontSize: 15, fontWeight: '600', color: colors.textPrimary },
-  building: { fontSize: 12, color: colors.textSecondary },
+  meta: { fontSize: 12, color: colors.textSecondary },
   points: { fontWeight: '700', color: colors.primary },
 });

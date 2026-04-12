@@ -1,13 +1,15 @@
 import { View, Text, StyleSheet } from 'react-native';
 
+// Status keys match backend SUBMISSION_STATUS enum from config/constants.js:
+//   pending_review, approved, rejected
 const config = {
-  pending:  { bg: '#FFF8E1', color: '#F57F17', label: '⏳ Pending Review' },
-  approved: { bg: '#E8F5E9', color: '#2E7D32', label: '✅ Approved' },
-  rejected: { bg: '#FFEBEE', color: '#C62828', label: '❌ Rejected' },
+  pending_review: { bg: '#FFF8E1', color: '#F57F17', label: '⏳ Pending Review' },
+  approved:       { bg: '#E8F5E9', color: '#2E7D32', label: '✅ Approved' },
+  rejected:       { bg: '#FFEBEE', color: '#C62828', label: '❌ Rejected' },
 };
 
 export default function SubmissionStatus({ status }) {
-  const c = config[status] || config.pending;
+  const c = config[status] || config.pending_review;
   return (
     <View style={[styles.pill, { backgroundColor: c.bg }]}>
       <Text style={[styles.text, { color: c.color }]}>{c.label}</Text>

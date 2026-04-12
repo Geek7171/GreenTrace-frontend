@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "WasteWise",
-    "slug": "WasteWise",
+    "name": "GreenTrace",
+    "slug": "GreenTrace",
+    "scheme": "greentrace",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,13 +21,20 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.yash467.GreenTrace"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5f85bd95-4d99-4e03-97cd-9d0351a05e84"
+      }
+    }
   }
 }
