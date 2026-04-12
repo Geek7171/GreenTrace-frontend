@@ -57,14 +57,24 @@ export async function getTodaySubmissions(uid) {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
+  // We fetch a bit more and filter in memory to handle UIDs with spaces
   const q = query(
     collection(db, 'submissions'),
-    where('uid', '==', uid),
     where('createdAt', '>=', startOfDay),
     orderBy('createdAt', 'desc'),
-    limit(10)
+    limit(50)
   );
 
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const targetUid = uid ? uid.trim() : "";
+
+  return snap.docs
+    .map(doc => {
+      const data = doc.data();
+      // Clean UID check
+      const docUid = (data.uid || data.UID || data.userId || "").trim();
+      if (docUid !== targetUid) return null;
+      return { id: doc.id, ...data };
+    })
+    .filter(Boolean);
 }

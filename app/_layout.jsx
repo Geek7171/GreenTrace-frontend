@@ -4,6 +4,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuth } from '../hooks/useAuth';
 import { View, ActivityIndicator, Image, Text, StyleSheet } from 'react-native';
 import { colors } from '../constants/theme';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
 
 export default function RootLayout() {
   const { user, loading } = useAuth();
@@ -13,35 +18,36 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    // Hide splash screen once loading is done
+    SplashScreen.hideAsync().catch(() => {});
 
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      router.replace('/(tabs)/home');
+    try {
+      const inAuthGroup = segments[0] === '(auth)';
+      if (!user && !inAuthGroup) {
+        router.replace('/(auth)/login');
+      } else if (user && inAuthGroup) {
+        router.replace('/(tabs)/home');
+      }
+    } catch (e) {
+      console.error("Navigation error:", e);
     }
   }, [user, loading, segments]);
 
-  if (loading) return (
-    <SafeAreaProvider>
-      <View style={styles.loadingContainer}>
-        <View style={styles.logoContainer}>
+  return (
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: '#D9F2E6' }}>
+      {loading ? (
+        <View style={styles.loadingContainer}>
           <Image 
             source={require('../assets/icon.png')} 
             style={styles.logo}
             resizeMode="contain"
-            onLoadError={() => console.log('Logo load failed')}
           />
+          <ActivityIndicator color={colors.primary} size="large" style={{ marginTop: 20 }} />
+          <Text style={styles.loadingText}>GreenTrace</Text>
         </View>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={styles.loadingText}>Loading GreenTrace...</Text>
-      </View>
-    </SafeAreaProvider>
-  );
-
-  return (
-    <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }} />
+      )}
     </SafeAreaProvider>
   );
 }
@@ -49,27 +55,20 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#D9F2E6',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoContainer: {
-    marginBottom: 40,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
   logo: {
-    width: 150,
-    height: 150,
-    borderRadius: 30,
+    width: 120,
+    height: 120,
+    borderRadius: 24,
   },
   loadingText: {
-    marginTop: 20,
+    marginTop: 16,
     color: '#2E7D32',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: 1,
   }
 });
