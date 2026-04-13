@@ -6,7 +6,7 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "MISSING_KEY",
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
@@ -15,12 +15,35 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+// Defensive App Initialization
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+} catch (e) {
+  console.error("Firebase App Init Error:", e);
+  // Create a dummy app object to prevent downstream crashes
+  app = { name: '[DEFAULT]', options: {}, automaticDataCollectionEnabled: false };
+}
 
 // Use AsyncStorage for auth persistence in React Native
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+let auth;
+try {
+  if (!process.env.EXPO_PUBLIC_FIREBASE_API_KEY) {
+    console.warn("CRITICAL: Firebase API Key is missing! APK build might be missing environment secrets.");
+  }
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+} catch (e) {
+  console.error("Auth init error:", e);
+  try {
+    auth = initializeAuth(app, {});
+  } catch (innerE) {
+    auth = {}; // Final fallback
+  }
+}
+
+export { auth };
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);

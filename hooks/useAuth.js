@@ -13,6 +13,12 @@ export function useAuth() {
       setLoading(false);
     }, 5000);
 
+    if (!auth || typeof onAuthStateChanged !== 'function') {
+      console.error("Firebase Auth is not properly initialized.");
+      setLoading(false);
+      return;
+    }
+
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (u) {
         // Run a one-time sync to fix missing names/wallets in serverless mode

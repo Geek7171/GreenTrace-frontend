@@ -11,9 +11,23 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 
 export default function RootLayout() {
-  const { user, loading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  
+  let authData;
+  try {
+    authData = useAuth();
+  } catch (e) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Configuration Error</Text>
+        <Text style={styles.errorText}>{e.message}</Text>
+        <Text style={styles.errorSubText}>Please ensure your environment variables are correctly set and the app is rebuilt.</Text>
+      </View>
+    );
+  }
+
+  const { user, loading } = authData;
 
   useEffect(() => {
     if (loading) return;
@@ -23,10 +37,18 @@ export default function RootLayout() {
 
     try {
       const inAuthGroup = segments[0] === '(auth)';
-      if (!user && !inAuthGroup) {
-        router.replace('/(auth)/login');
-      } else if (user && inAuthGroup) {
-        router.replace('/(tabs)/home');
+      const isAtRoot = !segments || segments.length === 0 || segments[0] === 'index';
+
+      if (!user) {
+        // If not logged in and not in auth group, or at root -> go to login
+        if (!inAuthGroup || isAtRoot) {
+          router.replace('/(auth)/login');
+        }
+      } else {
+        // If logged in and in auth group, or at root -> go to home
+        if (inAuthGroup || isAtRoot) {
+          router.replace('/(tabs)/home');
+        }
       }
     } catch (e) {
       console.error("Navigation error:", e);
@@ -58,6 +80,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#D9F2E6',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#FFF1F1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#D32F2F',
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  errorSubText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   logo: {
     width: 120,
