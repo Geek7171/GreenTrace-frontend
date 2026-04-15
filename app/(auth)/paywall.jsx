@@ -7,6 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { colors, spacing, borderRadius } from '../../constants/theme';
 import Button from '../../components/ui/Button';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { processFinePayment } from '../../services/payment';
 
 export default function Paywall() {
   const { user } = useAuth();
@@ -14,26 +15,44 @@ export default function Paywall() {
   const [loading, setLoading] = useState(false);
 
   const handlePayment = async () => {
+    if (!user) return;
+    
     setLoading(true);
-    // High-fidelity mock of Google Payment processing
-    setTimeout(async () => {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          isBlocked: false,
-          warningCount: 0,
-          lastUnblockedAt: new Date().toISOString(),
-        });
-        setLoading(false);
-        Alert.alert("Payment Successful", "Your account has been unblocked. Please follow the guidelines.", [
-          { text: "OK", onPress: () => router.replace('/(tabs)/home') }
-        ]);
-      } catch (e) {
-        setLoading(false);
-        console.error("Payment error:", e);
-        Alert.alert("Error", "Could not process fine: " + e.message);
+    try {
+      // 1. Trigger Real Razorpay Payment
+      const paymentResponse = await processFinePayment(
+        100, 
+        user.email, 
+        user.displayName || 'GreenTrace User'
+      );
+
+      console.log("Payment Successful:", paymentResponse.razorpay_payment_id);
+
+      // 2. If payment successful, update Firestore to unblock
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        isBlocked: false,
+        warningCount: 0,
+        lastUnblockedAt: new Date().toISOString(),
+        lastPaymentId: paymentResponse.razorpay_payment_id // Record the receipt
+      });
+
+      setLoading(false);
+      Alert.alert(
+        "Payment Successful", 
+        "Thank you. Your account has been reinstated. Please be more careful with waste segregation.", 
+        [{ text: "Continue", onPress: () => router.replace('/(tabs)/home') }]
+      );
+    } catch (e) {
+      setLoading(false);
+      // Razorpay errors come in a specific format
+      const errorMsg = e.description || e.message || "Payment cancelled";
+      
+      if (errorMsg !== "Payment cancelled") {
+        Alert.alert("Payment Failed", errorMsg);
       }
-    }, 2000);
+      console.log("Payment flow error/cancel:", e);
+    }
   };
 
   return (
