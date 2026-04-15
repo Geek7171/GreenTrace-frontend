@@ -14,44 +14,60 @@ export default function Paywall() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handlePayment = async () => {
+  // Simulation/Demo Payment logic
+  const handleMockPayment = async () => {
     if (!user) return;
+    setLoading(true);
     
+    // Simulate API delay
+    setTimeout(async () => {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          isBlocked: false,
+          warningCount: 0,
+          lastUnblockedAt: new Date().toISOString(),
+        });
+        setLoading(false);
+        Alert.alert("Demo Success", "This was a simulation. Account unblocked.", [
+          { text: "OK", onPress: () => router.replace('/(tabs)/home') }
+        ]);
+      } catch (e) {
+        setLoading(false);
+        Alert.alert("Error", e.message);
+      }
+    }, 1500);
+  };
+
+  // Real Razorpay Payment logic
+  const handleRealPayment = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      // 1. Trigger Real Razorpay Payment
       const paymentResponse = await processFinePayment(
         100, 
         user.email, 
         user.displayName || 'GreenTrace User'
       );
 
-      console.log("Payment Successful:", paymentResponse.razorpay_payment_id);
-
-      // 2. If payment successful, update Firestore to unblock
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
         isBlocked: false,
         warningCount: 0,
         lastUnblockedAt: new Date().toISOString(),
-        lastPaymentId: paymentResponse.razorpay_payment_id // Record the receipt
+        lastPaymentId: paymentResponse.razorpay_payment_id
       });
 
       setLoading(false);
-      Alert.alert(
-        "Payment Successful", 
-        "Thank you. Your account has been reinstated. Please be more careful with waste segregation.", 
-        [{ text: "Continue", onPress: () => router.replace('/(tabs)/home') }]
-      );
+      Alert.alert("Real Payment Success", "Your fine has been paid via Razorpay.", [
+        { text: "Continue", onPress: () => router.replace('/(tabs)/home') }
+      ]);
     } catch (e) {
       setLoading(false);
-      // Razorpay errors come in a specific format
       const errorMsg = e.description || e.message || "Payment cancelled";
-      
       if (errorMsg !== "Payment cancelled") {
         Alert.alert("Payment Failed", errorMsg);
       }
-      console.log("Payment flow error/cancel:", e);
     }
   };
 
@@ -80,21 +96,29 @@ export default function Paywall() {
         </View>
 
         <Text style={styles.footerText}>
-          To resume using GreenTrace, please pay the fine using Google Play or your linked payment method.
+          To resume using GreenTrace, please pay the fine using one of the methods below.
         </Text>
 
         <View style={styles.buttonContainer}>
           {loading ? (
             <View style={styles.processing}>
               <ActivityIndicator color={colors.danger} size="small" />
-              <Text style={styles.processingText}>Processing with Google Play...</Text>
+              <Text style={styles.processingText}>Processing...</Text>
             </View>
           ) : (
-            <Button 
-              label="Pay Fine with Google Pay 💳" 
-              onPress={handlePayment}
-              variant="danger"
-            />
+            <>
+              <Button 
+                label="Demo Payment (Simulation) 🧪" 
+                onPress={handleMockPayment}
+                variant="secondary"
+                style={{ marginBottom: spacing.md }}
+              />
+              <Button 
+                label="Real Payment (Razorpay) 💳" 
+                onPress={handleRealPayment}
+                variant="danger"
+              />
+            </>
           )}
         </View>
       </View>
