@@ -8,7 +8,8 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/card';
 import SubmissionStatus from '../../components/SubmissionStatus';
 import PointsBadge from '../../components/ui/PointsBadge';
-import { colors, spacing } from '../../constants/theme';
+import { colors, spacing, borderRadius } from '../../constants/theme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function Home() {
   const { user } = useAuth();
@@ -34,8 +35,8 @@ export default function Home() {
         setLoading(false);
       }
     };
-    if (user) load();
-  }, [user]);
+    if (user?.uid) load();
+  }, [user?.uid]);
 
   const latestSubmission = todaySubmissions.length > 0 ? todaySubmissions[0] : null;
 
@@ -53,6 +54,15 @@ export default function Home() {
         <Text style={styles.greeting}>Good morning, {name} 👋</Text>
         {balance !== null && <PointsBadge points={balance} />}
       </View>
+
+      {user?.warningCount > 0 && (
+        <View style={styles.warningBanner}>
+          <MaterialCommunityIcons name="alert" size={20} color={colors.white} />
+          <Text style={styles.warningText}>
+            Warning {user.warningCount}/3: Follow guidelines to avoid suspension.
+          </Text>
+        </View>
+      )}
 
       <Card style={styles.statusCard}>
         <Text style={styles.statusLabel}>Today's Submission</Text>
@@ -78,6 +88,22 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 20 },
   greeting: { fontSize: 22, fontWeight: '700', color: colors.textPrimary, flex: 1 },
+  warningBanner: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: colors.warning, 
+    padding: spacing.md, 
+    borderRadius: borderRadius.card, 
+    marginBottom: spacing.lg,
+    elevation: 2
+  },
+  warningText: { 
+    color: colors.white, 
+    marginLeft: spacing.sm, 
+    fontWeight: '600',
+    fontSize: 14,
+    flex: 1
+  },
   statusCard: { backgroundColor: '#E8F5E9', marginBottom: 20 },
   statusLabel: { fontSize: 12, color: colors.textSecondary, marginBottom: 6 },
   statusText: { fontSize: 16, color: colors.textPrimary, fontWeight: '500' },

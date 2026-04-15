@@ -44,6 +44,12 @@ export default function RootLayout() {
         if (!inAuthGroup || isAtRoot) {
           router.replace('/(auth)/login');
         }
+      } else if (user.isBlocked) {
+        // If logged in but blocked -> go to paywall
+        const isAtPaywall = segments[0] === '(auth)' && segments[segments.length - 1] === 'paywall';
+        if (!isAtPaywall) {
+          router.replace('/(auth)/paywall');
+        }
       } else {
         // If logged in and in auth group, or at root -> go to home
         if (inAuthGroup || isAtRoot) {
