@@ -42,6 +42,8 @@ export default function Paywall() {
   // Real Razorpay Payment logic
   const handleRealPayment = async () => {
     if (!user) return;
+    console.log("DEBUG: Real Payment button clicked. Attempting Razorpay...");
+    
     setLoading(true);
     try {
       const paymentResponse = await processFinePayment(
@@ -49,6 +51,8 @@ export default function Paywall() {
         user.email, 
         user.displayName || 'GreenTrace User'
       );
+
+      console.log("DEBUG: Razorpay Success ID:", paymentResponse.razorpay_payment_id);
 
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, {
@@ -63,10 +67,15 @@ export default function Paywall() {
         { text: "Continue", onPress: () => router.replace('/(tabs)/home') }
       ]);
     } catch (e) {
+      setLoading(true);
       setLoading(false);
-      const errorMsg = e.description || e.message || "Payment cancelled";
+      console.error("DEBUG: Razorpay Flow Error:", e);
+      
+      const errorMsg = e.description || e.message || "Native Module Error: check if you are using a Development Build";
+      
+      // If payment is cancelled by user, don't show an error
       if (errorMsg !== "Payment cancelled") {
-        Alert.alert("Payment Failed", errorMsg);
+        Alert.alert("Razorpay Alert", errorMsg);
       }
     }
   };
